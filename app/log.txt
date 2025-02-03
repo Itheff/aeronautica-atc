@@ -1,0 +1,6 @@
+Traceback (most recent call last):
+  File "/home/itheff/Projects/aeronautica-atc/app/app.py", line 169, in submit
+    self.pdc_output.insert(1.0, self.pdc_builder.build_pdc(self.flight_plan_input.get("1.0", END),
+  File "/home/itheff/Projects/aeronautica-atc/app/app.py", line 107, in build_pdc
+    return_string: str = (f"CLR {self.current_flight_plan[2].upper()} TO ARR "
+IndexError: list index out of range

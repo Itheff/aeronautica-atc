@@ -1,8 +1,9 @@
+from fileinput import close
+from traceback import format_exception
 from random import randint
-from traceback import print_tb
 from tkinter import END, Tk, Frame, Text, Button, Widget
 from tkinter.ttk import Notebook
-from typing import List, Literal
+from typing import List, Literal, TextIO
 
 
 class PDCBuilder:
@@ -95,7 +96,7 @@ class PDCBuilder:
                        "CTR": "ERROR"}
         return airport[frequency_type.upper()]
 
-    def build_pdc(self, flight_plan: str, phraseology: Literal["faa", "caa", "icao"]) -> str:
+    def build_pdc(self, flight_plan: str, phraseology: Literal["faa", "caa", "icao"], atis: str) -> str:
         """
         This method brings everything together and returns the completed PDC. You only need to call this method to
         generate the PDC, everything else is done automatically by this method.
@@ -134,6 +135,7 @@ class PDCFrame(Frame):
     pdc_output: Text
     phraseology: Literal["faa", "caa", "icao"]
     pdc_builder: PDCBuilder
+    atis_information: Text
 
     def __init__(self, master: Widget, phraseology: Literal["faa", "caa", "icao"]):
         super().__init__(master)
@@ -147,6 +149,9 @@ class PDCFrame(Frame):
         self.flight_plan_input.pack(padx=10, pady=10)
         self.submit_button.pack()
         self.pdc_output.pack(padx=10, pady=10, expand=True)
+        if self.phraseology == "caa":
+            self.atis_information = Text(self, height=1, borderwidth=2, wrap="none")
+            self.atis_information.pack(padx=10, pady=10)
 
     def submit(self):
         """
@@ -156,15 +161,22 @@ class PDCFrame(Frame):
         try:
             self.pdc_output.config(state="normal")
             self.pdc_output.delete("1.0", END)
-            self.pdc_output.insert(1.0, self.pdc_builder.build_pdc(self.flight_plan_input.get("1.0", END),
-                                                                   self.phraseology))
+            if self.phraseology == "caa":
+                self.pdc_output.insert(1.0, self.pdc_builder.build_pdc(self.flight_plan_input.get("1.0", END),
+                                                                   self.phraseology,
+                                                                   self.atis_information.get("1.0", END)))
+            else:
+                self.pdc_output.insert(1.0, self.pdc_builder.build_pdc(self.flight_plan_input.get("1.0", END),
+                                                                   self.phraseology, ""))
             self.pdc_output.config(state="disabled")
         except Exception as e:
-            print_tb(e.__traceback__)
+            file: TextIO = open("log.txt", "w")
+            for tb in format_exception(e):
+                file.write(tb)
+            close()
 
 
 class PDCNotebook(Notebook):
-
     faa_frame: PDCFrame
     caa_frame: PDCFrame
     icao_frame: PDCFrame
@@ -174,7 +186,7 @@ class PDCNotebook(Notebook):
         faa_frame = PDCFrame(self, "faa")
         caa_frame = PDCFrame(self, "caa")
         caa_frame.pdc_output.config(state="normal")
-        caa_frame.pdc_output.insert(END, "Disclaimer, you must set the correct ATIS every time a PDC is generated")
+        caa_frame.pdc_output.insert(END, "State the ATIS phonetically (ALPHA not A) below before using.")
         caa_frame.pdc_output.config(state="disabled")
         icao_frame = PDCFrame(self, "icao")
         icao_frame.flight_plan_input.insert(END, "INOP")
