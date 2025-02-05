@@ -83,7 +83,7 @@ class PDCBuilder:
         airport: dict[str, str] = {}
         for row in self.airports:
             if row["ICAO"] == icao:
-                airport = row
+                airport = row # TODO: This seems to be broken
                 break
             airport = {"ICAO": "ERROR",
                        "Name": "ERROR",
@@ -115,11 +115,11 @@ class PDCBuilder:
                 return_string: str = (f"{self.current_flight_plan[2].upper()} CLR TO ARR "
                                       f"{self.current_flight_plan[9].upper()} VIA "
                                       f"{self.current_flight_plan[10].upper()}. SQUAWK {self.generate_squawk()}, "
-                                      f"ATIS A.  WHEN READY CALL FREQ "
+                                      f"ATIS {atis.upper()}.  WHEN READY CALL FREQ "
                                       f"{self.find_frequency(self.current_flight_plan[8], 'gnd')}.")
                 return return_string
             case "icao":
-                return "NOT IMPLEMENTED"  # TODO IMPLEMENT THIS
+                return "NOT IMPLEMENTED"  # TODO: Implement this
 
     def __init__(self):
         self.read_database()
