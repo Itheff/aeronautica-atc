@@ -1,9 +1,8 @@
-from fileinput import close
 from traceback import format_exception
 from random import randint
 from tkinter import END, Tk, Frame, Text, Button, Widget
 from tkinter.ttk import Notebook
-from typing import List, Literal, TextIO
+from typing import List, Literal, IO
 
 
 class PDCBuilder:
@@ -21,7 +20,7 @@ class PDCBuilder:
         the frequencies database and stores those contents in the airports list. Each airport is represented as a
         dictionary.
         """
-        raw_csv_file = open("resources/frequencies_database.csv", "r")
+        raw_csv_file: IO = open("resources/frequencies_database.csv", "r")
         lines: List[str] = raw_csv_file.read().split("\n")
         headers = lines[0].split(",")
         for line in lines[1:]:
@@ -170,10 +169,8 @@ class PDCFrame(Frame):
                                                                    self.phraseology, ""))
             self.pdc_output.config(state="disabled")
         except Exception as e:
-            file: TextIO = open("log.txt", "w")
             for tb in format_exception(e):
-                file.write(tb)
-            close()
+                print(tb)
 
 
 class PDCNotebook(Notebook):
